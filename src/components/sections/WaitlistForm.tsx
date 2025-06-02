@@ -1,28 +1,26 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { FaPaperPlane, FaTwitter, FaLink } from "react-icons/fa";
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { FaPaperPlane, FaTwitter, FaLink } from 'react-icons/fa';
 
 export default function WaitlistForm() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    role: "user",
-    explanation: "",
-    socialPost: "",
+    name: '',
+    email: '',
+    role: 'user',
+    explanation: '',
+    socialPost: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,53 +30,40 @@ export default function WaitlistForm() {
 
     // Validate explanation (required)
     if (!formData.explanation) {
-      setError("Please provide an explanation of why you want to join Sophex.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Validate Twitter/X URL if provided
-    if (formData.socialPost && !isValidTwitterUrl(formData.socialPost)) {
-      setError("Please enter a valid Twitter/X post URL");
+      setError('Please provide an explanation of why you want to join Sophex.');
       setIsSubmitting(false);
       return;
     }
 
     try {
-      const response = await fetch("/api/submit-waitlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/submit-waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const { error } = await response.json();
-        throw new Error(error || "Failed to submit form");
+        throw new Error(error || 'Failed to submit form');
       }
 
       setIsSubmitted(true);
       setFormData({
-        name: "",
-        email: "",
-        role: "user",
-        explanation: "",
-        socialPost: "",
+        name: '',
+        email: '',
+        role: 'user',
+        explanation: '',
+        socialPost: '',
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
         setError(error.message);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError('Something went wrong. Please try again.');
       }
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const isValidTwitterUrl = (url: string) => {
-    const twitterRegex =
-      /^https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/\w+\/status\/\d+$/i;
-    return twitterRegex.test(url);
   };
 
   if (isSubmitted) {
@@ -118,9 +103,7 @@ export default function WaitlistForm() {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="mb-4">
-        <label className="block text-neutral-300 mb-2">
-          Your Name (Optional)
-        </label>
+        <label className="block text-neutral-300 mb-2">Your Name (Optional)</label>
         <input
           type="text"
           name="name"
@@ -132,9 +115,7 @@ export default function WaitlistForm() {
       </div>
 
       <div className="mb-4">
-        <label className="block text-neutral-300 mb-2">
-          Your Email (Optional)
-        </label>
+        <label className="block text-neutral-300 mb-2">Your Email (Optional)</label>
         <input
           type="email"
           name="email"
@@ -154,9 +135,7 @@ export default function WaitlistForm() {
           className="w-full px-4 py-3 bg-neutral-700 border border-neutral-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-white appearance-none"
         >
           <option value="user">User (I want to earn rewards)</option>
-          <option value="project">
-            Project (I want to onboard my project)
-          </option>
+          <option value="project">Project (I want to onboard my project)</option>
           <option value="ambassador">Community Ambassador</option>
           <option value="other">Other</option>
         </select>
@@ -179,7 +158,7 @@ export default function WaitlistForm() {
       </div>
 
       <div className="mb-6">
-        <label className="block text-neutral-300 mb-2 items-center">
+        <label className="block text-neutral-300 mb-2  items-center">
           <FaTwitter className="text-blue-400 mr-2" />
           Share your X/Twitter post about Sophex (Optional)
         </label>
@@ -229,11 +208,11 @@ export default function WaitlistForm() {
         type="submit"
         disabled={isSubmitting}
         className={`w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium py-3 rounded-lg transition-all hover:from-orange-600 hover:to-orange-700 ${
-          isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+          isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
         }`}
       >
         {isSubmitting ? (
-          "Submitting..."
+          'Submitting...'
         ) : (
           <>
             <FaPaperPlane /> Submit Application

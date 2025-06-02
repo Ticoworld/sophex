@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
 import { google } from 'googleapis';
+import { NextResponse } from 'next/server';
 
 type WaitlistFormData = {
   name?: string;
@@ -22,32 +22,23 @@ export async function POST(request: Request) {
   } catch (firstError) {
     console.warn('⚠️ First JSON.parse failed:', firstError);
 
-    // 3. Attempt simple transform from JS‐object‐literal (unquoted keys/values) → valid JSON:
-    //    a) Strip surrounding single quotes, if present
-    //    b) Wrap bare keys in double quotes
-    //    c) Wrap bare values (until comma or closing brace) in double quotes
+    // 3. Attempt simple transform from JS-object-literal
     const trimmed = rawBody.trim();
     const withoutQuotes =
       trimmed.startsWith(`'`) && trimmed.endsWith(`'`)
         ? trimmed.slice(1, -1)
         : trimmed;
 
-    // 3.a) Wrap unquoted keys:  { name: → {"name":
     const keyQuoted = withoutQuotes.replace(
       /([{\s,])([A-Za-z0-9_]+)\s*:/g,
       '$1"$2":'
     );
-
-    // 3.b) Wrap unquoted values:  :"someValue",  or :"someValue"}  →  :"someValue",
-    //     This pattern looks for any colon followed by characters up to a comma or closing brace, as long as they’re not already in quotes.
     const fullyQuoted = keyQuoted.replace(
       /:"?([^",\{\}]+)"?(?=[,}])/g,
       ':"$1"'
     );
-
     console.log('🔄 Transformed to valid JSON candidate:', fullyQuoted);
 
-    // 3.c) Try parsing again
     try {
       formData = JSON.parse(fullyQuoted);
     } catch (secondError) {
@@ -63,17 +54,6 @@ export async function POST(request: Request) {
   if (!formData.explanation) {
     return NextResponse.json(
       { error: 'Explanation is required' },
-      { status: 400 }
-    );
-  }
-  if (
-    formData.socialPost &&
-    !/^https?:\/\/(?:www\.)?(?:x\.com|twitter\.com)\/\w+\/status\/\d+$/i.test(
-      formData.socialPost
-    )
-  ) {
-    return NextResponse.json(
-      { error: 'Invalid Twitter/X URL format' },
       { status: 400 }
     );
   }
