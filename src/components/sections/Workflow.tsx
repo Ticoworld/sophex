@@ -6,6 +6,16 @@ import GlowingButton from '../ui/GlowingButton';
 import { FaTasks, FaCoins, FaExchangeAlt, FaMoneyBillWave } from 'react-icons/fa';
 import { useModal } from '@/context/ModalContext';
 
+// Pre-generated star positions to avoid hydration mismatch
+const stars = Array.from({ length: 100 }, (_, i) => ({
+  id: i,
+  left: `${(i * 137.5 % 100)}%`, // Deterministic pseudo-random distribution
+  top: `${(i * 149.7 % 100)}%`,
+  animationDelay: `${(i * 0.05) % 5}s`,
+  animationDuration: `${2 + (i * 0.03) % 3}s`,
+  scale: 0.5 + (i * 0.005) % 0.5,
+}));
+
 const steps = [
   {
     id: 1,
@@ -36,20 +46,22 @@ const steps = [
 export default function Workflow() {
   const { openWaitlist } = useModal();
   return (
-    <section className="py-24 relative overflow-hidden bg-neutral-950">
+    <section className="py-24 relative overflow-hidden bg-neutral-950"
+      id="how-it works"
+    >
       {/* CSS Starfield Background */}
       <div className="absolute inset-0 z-0">
         <div className="starfield">
-          {[...Array(100)].map((_, i) => (
+          {stars.map((star) => (
             <div
-              key={i}
+              key={star.id}
               className="star"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${2 + Math.random() * 3}s`,
-                transform: `scale(${0.5 + Math.random() * 0.5})`,
+                left: star.left,
+                top: star.top,
+                animationDelay: star.animationDelay,
+                animationDuration: star.animationDuration,
+                transform: `scale(${star.scale})`,
               }}
             />
           ))}
@@ -109,9 +121,7 @@ export default function Workflow() {
           ))}
         </div>
 
-        <div className="text-center mt-16"
-        onClick={openWaitlist}
-        >
+        <div className="text-center mt-16" onClick={openWaitlist}>
           <GlowingButton>Join the Waitlist</GlowingButton>
         </div>
       </div>

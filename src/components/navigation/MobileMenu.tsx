@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { FaTimes } from "react-icons/fa";
-import { useModal } from "@/context/ModalContext";
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { FaTimes } from 'react-icons/fa';
+import { useModal } from '@/context/ModalContext';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -15,12 +15,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     open: {
       x: 0,
       opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
+      transition: { duration: 0.3, ease: 'easeOut' },
     },
     closed: {
-      x: "100%",
+      x: '100%',
       opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
+      transition: { duration: 0.3, ease: 'easeIn' },
     },
   };
 
@@ -30,7 +30,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     <motion.div
       className="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-neutral-900/95 backdrop-blur-md z-50 shadow-lg"
       initial="closed"
-      animate={isOpen ? "open" : "closed"}
+      animate={isOpen ? 'open' : 'closed'}
       variants={menuVariants}
     >
       <div className="flex justify-end p-6">
@@ -43,10 +43,10 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         </button>
       </div>
       <div className="flex flex-col items-center space-y-6 mt-10">
-        {["Features", "NFTs", "How It Works", "For Projects"].map((item) => (
+        {['Features', 'NFTs', 'How It Works', 'Spin'].map((item) => (
           <Link
             key={item}
-            href={`#${item.toLowerCase().replace(" ", "-")}`}
+            href={item === 'Spin' ? '/spin' : `#${item.toLowerCase().replace(' ', '-')}`}
             className="text-xl text-neutral-300 hover:text-orange-400 transition-colors"
             onClick={onClose}
           >
@@ -54,11 +54,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </Link>
         ))}
         <button
-          onClick={openWaitlist}
-          className="bg-primary px-8 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors mt-6 text-gray-300 border border-orange-400"
+          onClick={() => {
+            openWaitlist();
+            onClose();
+          }}
+          className="bg-primary px-8 py-3 rounded-lg font-medium hover:bg-primary-dark transition-colors text-gray-300 border border-orange-400"
         >
           Join Waitlist
         </button>
+        <Link
+          href="/spin"
+          className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-3  rounded-lg font-medium text-white hover:from-orange-600 hover:to-orange-700 transition-colors"
+          onClick={onClose}
+        >
+          Spin
+        </Link>
       </div>
     </motion.div>
   );

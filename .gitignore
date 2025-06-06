@@ -23,7 +23,7 @@
 # misc
 .DS_Store
 *.pem
-
+loaderio-5c29560cc850d75f66f76cf58448d9df.txt
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useState } from "react";
-import { FaBars, FaTimes } from "react-icons/fa";
-import { motion } from "framer-motion";
-import MobileMenu from "./MobileMenu";
-import { useModal } from "@/context/ModalContext";
+import Link from 'next/link';
+import { useState } from 'react';
+import { FaBars, FaTimes } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import MobileMenu from './MobileMenu';
+import { useModal } from '@/context/ModalContext';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,7 +18,7 @@ export default function Navbar() {
   const linkVariants = {
     hover: {
       scale: 1.1,
-      color: "#FF7A00",
+      color: '#FF7A00',
       transition: { duration: 0.3 },
     },
   };
@@ -26,7 +26,7 @@ export default function Navbar() {
   const buttonVariants = {
     hover: {
       scale: 1.05,
-      boxShadow: "0 0 10px rgba(255, 122, 0, 0.5)",
+      boxShadow: '0 0 10px rgba(255, 122, 0, 0.5)',
       transition: { duration: 0.3 },
     },
     tap: { scale: 0.95 },
@@ -41,10 +41,10 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex space-x-8">
-          {["Features", "NFTs", "How It Works", "For Projects"].map((item) => (
+          {['Features', 'NFTs', 'How It Works', 'Spin'].map((item) => (
             <motion.div key={item} variants={linkVariants} whileHover="hover">
               <Link
-                href={`#${item.toLowerCase().replace(" ", "-")}`}
+                href={item === 'Spin' ? '/spin' : `#${item.toLowerCase().replace(' ', '-')}`}
                 className="text-neutral-300 hover:text-primary transition-colors"
               >
                 {item}
@@ -53,15 +53,29 @@ export default function Navbar() {
           ))}
         </div>
 
-        <motion.a
-          onClick={openWaitlist}
-          className="hidden md:block bg-primary px-6 py-2 rounded-lg font-medium text-gray-300"
-          variants={buttonVariants}
-          whileHover="hover"
-          whileTap="tap"
-        >
-          Join Waitlist
-        </motion.a>
+        <div className="hidden md:flex space-x-4">
+          <motion.button
+            onClick={openWaitlist}
+            className="bg-primary px-6 py-2 rounded-lg font-medium text-gray-300"
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            Join Waitlist
+          </motion.button>
+          <motion.div
+            variants={buttonVariants}
+            whileHover="hover"
+            whileTap="tap"
+          >
+            <Link
+              href="/spin"
+              className="bg-gradient-to-r from-orange-500 block to-orange-600 px-6 py-2 rounded-lg font-medium text-white"
+            >
+              Spin
+            </Link>
+          </motion.div>
+        </div>
 
         <button
           className="md:hidden text-orange-400 text-2xl"
