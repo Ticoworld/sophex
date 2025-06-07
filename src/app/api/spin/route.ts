@@ -7,11 +7,11 @@ import { rateLimit } from '@/lib/rateLimit';
 
 // Constants for spin logic
 const DAILY_SPINS = 2;
-const WHEEL_SEGMENTS = ['TRY AGAIN', 'FREE SPIN', 'TRY AGAIN', 'WHITELIST', 'TRY AGAIN', 'FREE SPIN'];
+const WHEEL_SEGMENTS = ['SPIN LOST', 'FREE SPIN', 'SPIN LOST', 'WHITELIST', 'SPIN LOST', 'FREE SPIN'];
 const RESULT_MAP: { [key: string]: string } = {
   WHITELIST: 'whitelist',
   'FREE SPIN': 'free-spin',
-  'TRY AGAIN': 'empty',
+  'SPIN LOST': 'empty',
 };
 
 export async function GET(req: NextRequest) {
@@ -91,7 +91,7 @@ export async function POST(req: NextRequest) {
     // Generate result, prevent whitelist if already won
     let prizeNumber = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
     if (WHEEL_SEGMENTS[prizeNumber] === 'WHITELIST' && user.whitelistWon) {
-      prizeNumber = WHEEL_SEGMENTS.findIndex(s => s === 'TRY AGAIN'); // Fallback to TRY AGAIN
+      prizeNumber = WHEEL_SEGMENTS.findIndex(s => s === 'SPIN LOST'); // Fallback to SPIN LOST
     }
     const result = RESULT_MAP[WHEEL_SEGMENTS[prizeNumber]];
 
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
     } else if (result === 'whitelist') {
       user.whitelistWon = true;
     }
+    
 
     await user.save();
 

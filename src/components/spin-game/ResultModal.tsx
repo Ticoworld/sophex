@@ -94,7 +94,7 @@ const ResultModal = ({ result, spinsLeft, onClose, onSubmit }: ResultModalProps)
         ) : (
           <div className="text-center">
             {spinsLeft > 0 ? (
-              <p className="mb-6 text-orange-200">No win this time, but you have {spinsLeft} spin(s) left! Try again now.</p>
+              <p className="mb-6 text-orange-200">Spin lost this time, but you have {spinsLeft} spin(s) left! Try again now.</p>
             ) : (
               <p className="mb-6 text-orange-200">No win this time, but come back tomorrow for more chances!</p>
             )}

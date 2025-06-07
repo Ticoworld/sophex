@@ -10,11 +10,11 @@ interface SpinWheelProps {
 
 const SpinWheel = ({ mustSpin, prizeNumber, onStopSpinning }: SpinWheelProps) => {
   const data = [
-    { option: 'TRY AGAIN', style: { backgroundColor: '#000', textColor: '#f97316' } },
+    { option: 'SPIN LOST', style: { backgroundColor: '#000', textColor: '#f97316' } },
     { option: 'FREE SPIN', style: { backgroundColor: '#f97316', textColor: '#000' } },
-    { option: 'TRY AGAIN', style: { backgroundColor: '#000', textColor: '#f97316' } },
+    { option: 'SPIN LOST', style: { backgroundColor: '#000', textColor: '#f97316' } },
     { option: 'WHITELIST', style: { backgroundColor: '#f8f5f7', textColor: '#f97316' } },
-    { option: 'TRY AGAIN', style: { backgroundColor: '#000', textColor: '#f97316' } },
+    { option: 'SPIN LOST', style: { backgroundColor: '#000', textColor: '#f97316' } },
     { option: 'FREE SPIN', style: { backgroundColor: '#f97316', textColor: '#000' } },
   ];
 
