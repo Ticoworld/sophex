@@ -42,28 +42,21 @@ const NFTItems = [
   },
 ];
 
-// Dynamically import NFTPreview3D to prevent SSR
+// Dynamically import NFTPreview3D to prevent SSR.
+// Let Suspense handle asynchronous loading by removing error handling inside.
 const NFTPreview3D = dynamic(
   () =>
     Promise.resolve(
       ({ src, scale = [1.8, 1.8, 1.8], rotationSpeed = 0.005 }: NFTPreview3DProps) => {
         const groupRef = useRef<Group>(null);
-        let gltf: GLTFResult | null = null;
-
-        try {
-          gltf = useGLTF(src) as GLTFResult;
-        } catch (error) {
-          console.error('Failed to load GLTF:', error);
-          return null;
-        }
+        // Call useGLTF unconditionally so Suspense takes care of pending state.
+        const gltf = useGLTF(src) as GLTFResult;
 
         useFrame(() => {
           if (groupRef.current && gltf?.scene) {
             groupRef.current.rotation.y += rotationSpeed;
           }
         });
-
-        if (!gltf?.scene) return null;
 
         return (
           <group ref={groupRef} scale={scale}>
@@ -119,7 +112,13 @@ export default function NFTShowcase() {
                     <directionalLight position={[2, 2, 2]} intensity={2.0} />
                     <directionalLight position={[-2, -2, -2]} intensity={1.0} />
                     <directionalLight position={[0, 3, -1]} intensity={0.8} color="#FFFFFF" />
-                    <Suspense fallback={null}>
+                    <Suspense
+                      fallback={
+                        <div className="w-full h-64 flex items-center justify-center">
+                          <div className="w-16 h-16 border-4 border-dashed border-orange-500 rounded-full animate-spin" />
+                        </div>
+                      }
+                    >
                       <NFTPreview3D src={nft.image} />
                     </Suspense>
                     <OrbitControls

@@ -21,17 +21,16 @@ function NFTModel({
   rotationSpeed = 0.005,
 }: NFTModelProps) {
   const groupRef = useRef<Group>(null);
-  
-  // Call useGLTF unconditionally
+  // Load the GLTF model; Suspense will handle the pending state
   const gltf = useGLTF(src) as GLTFResult;
 
   useFrame(() => {
-    if (groupRef.current) {
+    if (groupRef.current && gltf?.scene) {
       groupRef.current.rotation.y += rotationSpeed;
     }
   });
 
-  // If the scene is not available, you may return null or a fallback UI.
+  // If the scene isn't ready, Suspense ensures that the fallback is rendered
   if (!gltf?.scene) return null;
 
   return (
@@ -44,11 +43,7 @@ function NFTModel({
 export default function RotatingNFT() {
   return (
     <div className="w-full h-80 sm:h-[400px] sm:w-[400px]">
-      <Canvas
-        shadows
-        camera={{ position: [0, 1, 5], fov: 45 }}
-        gl={{ alpha: true }}
-      >
+      <Canvas shadows camera={{ position: [0, 1, 5], fov: 45 }} gl={{ alpha: true }}>
         <ambientLight intensity={1.5} />
         <directionalLight
           castShadow
