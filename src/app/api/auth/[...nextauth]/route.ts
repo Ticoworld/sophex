@@ -7,9 +7,14 @@ import { User } from '@/models/User';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rateLimit';
 
+// Updated interface to reflect Twitter v2 API nested structure
 interface TwitterProfile {
-  id: string;
-  username: string;
+  data: {
+    id: string;
+    username: string;
+    name: string;
+    profile_image_url?: string;
+  };
 }
 
 export const authOptions: NextAuthOptions = {
@@ -59,30 +64,32 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === 'twitter') {
         try {
           await connectMongoose();
-          const twitterProfile = profile as TwitterProfile;
-          const twitterId = twitterProfile.id; // Use twitterProfile.id directly
-          const username = twitterProfile.username || user.name || 'Unknown';
+          const twitterProfile = profile as { data: TwitterProfile['data'] };
+          const twitterId = twitterProfile.data.id; // Access nested data.id
+          console.log('[SignIn] Full profile:', profile);
 
           if (!twitterId) {
-            console.error('[SignIn] Missing twitterId:', profile);
+            console.error('[SignIn] Missing twitterId in profile.data:', profile);
             return false;
           }
 
+          const username = twitterProfile.data.username || user.name || 'Unknown';
           const existingUser = await User.findOne({ twitterId });
+
           if (!existingUser) {
             await User.create({
               twitterId,
               username,
               createdAt: new Date(),
             });
-            console.log(`[SignIn] New user created: ${twitterId}`);
+            console.log(`[SignIn] New user created: ${twitterId}, username: ${username}`);
           } else {
             await User.findOneAndUpdate(
               { twitterId },
               { $set: { username } },
               { new: true }
             );
-            console.log(`[SignIn] User updated: ${twitterId}`);
+            console.log(`[SignIn] User updated: ${twitterId}, username: ${username}`);
           }
         } catch (error) {
           console.error('[SignIn Error]', error);
@@ -91,21 +98,20 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-
-    async jwt({ token, user, account }) {
-      if (account?.provider === 'twitter' && user?.id) {
-        token.id = user.id; // Should be twitterId from Twitter
+    async jwt({ token, user, account, profile }) {
+      if (account?.provider === 'twitter' && profile) {
+        const twitterProfile = profile as { data: TwitterProfile['data'] };
+        token.id = twitterProfile.data.id; // Set token.id to Twitter ID
+        console.log('[JWT] Token updated with id:', token.id);
       }
       return token;
     },
-
     async session({ session, token }) {
       try {
         await connectMongoose();
         const appUser = await User.findOne({ twitterId: token.id as string });
-
         if (appUser) {
-          session.user.id = appUser.twitterId; // Ensure this matches twitterId
+          session.user.id = appUser.twitterId;
           session.user.name = appUser.username;
           console.log(`[Session] Loaded session for ${appUser.username}, id: ${appUser.twitterId}`);
         } else {
