@@ -5,10 +5,41 @@ import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Group } from 'three';
 import { useRef, Suspense } from 'react';
 
-type GLTFResult = {
+interface GLTFResult {
   scene: Group;
+}
 
-};
+interface NFTModelProps {
+  src: string;
+  scale?: [number, number, number];
+  rotationSpeed?: number;
+}
+
+function NFTModel({
+  src,
+  scale = [2, 2, 2],
+  rotationSpeed = 0.005,
+}: NFTModelProps) {
+  const groupRef = useRef<Group>(null);
+  
+  // Call useGLTF unconditionally
+  const gltf = useGLTF(src) as GLTFResult;
+
+  useFrame(() => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += rotationSpeed;
+    }
+  });
+
+  // If the scene is not available, you may return null or a fallback UI.
+  if (!gltf?.scene) return null;
+
+  return (
+    <group ref={groupRef} scale={scale}>
+      <primitive object={gltf.scene} castShadow />
+    </group>
+  );
+}
 
 export default function RotatingNFT() {
   return (
@@ -16,36 +47,28 @@ export default function RotatingNFT() {
       <Canvas
         shadows
         camera={{ position: [0, 1, 5], fov: 45 }}
-        gl={{ alpha: true }} // allow transparent background
+        gl={{ alpha: true }}
       >
-        
         <ambientLight intensity={1.5} />
         <directionalLight
           castShadow
-          position={[4, 6, 6]} // Moved slightly forward and up
-          intensity={3.5} // Increased intensity
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          position={[4, 6, 6]}
+          intensity={3.5}
+          shadow-mapSize={[1024, 1024]}
         />
+        <directionalLight position={[-5, 4, -4]} intensity={1.2} />
+        <directionalLight position={[0, 2, -5]} intensity={0.5} color="#ADD8E6" />
 
-        <directionalLight
-          position={[-5, 4, -4]} 
-          intensity={1.2} 
-        />
-
-        <directionalLight
-          position={[0, 2, -5]} 
-          intensity={0.5}
-          color="#ADD8E6" 
-        />
-
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <mesh>
+              <boxGeometry args={[1, 1, 1]} />
+              <meshStandardMaterial color="gray" />
+            </mesh>
+          }
+        >
           <NFTModel src="/assets/nft3.glb" scale={[3.5, 3.5, 3.5]} />
-          <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, -1.5, 0]}
-            receiveShadow
-          >
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.5, 0]} receiveShadow>
             <planeGeometry args={[10, 10]} />
             <shadowMaterial transparent opacity={0.15} />
           </mesh>
@@ -61,35 +84,6 @@ export default function RotatingNFT() {
         />
       </Canvas>
     </div>
-  );
-}
-
-type NFTModelProps = {
-  src: string;        
-  scale?: [number, number, number];
-  rotationSpeed?: number;
-};
-
-function NFTModel({
-  src,
-  scale = [2, 2, 2], 
-  rotationSpeed = 0.005,
-}: NFTModelProps) {
- 
-  const gltf = useGLTF(src) as unknown as GLTFResult;
-  const groupRef = useRef<Group>(null);
-
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += rotationSpeed;
-    }
-  });
-
-  return (
-    <group ref={groupRef} scale={scale}>
-   
-      <primitive object={gltf.scene} castShadow />
-    </group>
   );
 }
 

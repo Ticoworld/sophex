@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
-import Hero from '@/components/sections/Hero';
-import ValueProp from '@/components/sections/ValueProp';
+
+import Hero        from '@/components/sections/Hero';
+import ValueProp   from '@/components/sections/ValueProp';
 import NFTShowcase from '@/components/sections/NFTShowcase';
-import Workflow from '@/components/sections/Workflow';
-import CTA from '@/components/sections/CTA';
+import Workflow    from '@/components/sections/Workflow';
 import SpinSection from '@/components/sections/SpinSection';
-import Footer from '@/components/layout/Footer';
-import Navbar from '@/components/navigation/Navbar';
+import CTA         from '@/components/sections/CTA';
+import Footer      from '@/components/layout/Footer';
+import Navbar      from '@/components/navigation/Navbar';
+import type { Metadata } from 'next';
 
 export const generateMetadata = (): Metadata => ({
   title: 'SOPHEX - Web3 Made Invisible | Earn Crypto Rewards',
@@ -16,7 +17,7 @@ export const generateMetadata = (): Metadata => ({
     title: 'SOPHEX - Web3 Made Invisible',
     description:
       'Join SOPHEX to earn crypto rewards and win NFT whitelist spots through daily spins.',
-    url: 'https://sophex-black.vercel.app', // Replace with your domain
+    url: 'https://sophex-black.vercel.app',
     images: ['/assets/nft2.png'],
   },
   twitter: {
@@ -28,7 +29,7 @@ export const generateMetadata = (): Metadata => ({
 
 export default function Home() {
   return (
- <main className="min-h-screen">
+    <main className="min-h-screen">
       <Navbar />
       <Hero />
       <ValueProp />

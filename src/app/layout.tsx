@@ -6,8 +6,12 @@ import WaitlistModalWrapper from '@/components/ui/WaitlistModalWrapper';
 import Script from 'next/script';
 import ParticlesWrapper from '@/components/ui/ParticlesWrapper';
 
-const inter = Inter({ subsets: ['latin'] });
-
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  fallback: ['Arial', 'Helvetica', 'sans-serif'],
+});
 export const metadata: Metadata = {
   title: 'SOPHEX - Web3 Made Invisible | Crypto Rewards Platform',
   description:

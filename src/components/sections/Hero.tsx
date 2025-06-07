@@ -2,9 +2,15 @@
 
 import { motion } from 'framer-motion';
 import { FaRocket, FaChartLine } from 'react-icons/fa';
-import RotatingNFT from '../ui/RotatingNFT';
+import dynamic from 'next/dynamic';
 import { useModal } from '@/context/ModalContext';
 import Image from 'next/image';
+
+// Dynamically import RotatingNFT to prevent SSR
+const RotatingNFT = dynamic(() => import('../ui/RotatingNFT'), {
+  ssr: false,
+  loading: () => <div className="w-80 h-80 bg-neutral-800 animate-pulse" />,
+});
 
 export default function Hero() {
   const { openWaitlist } = useModal();

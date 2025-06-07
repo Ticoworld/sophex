@@ -1,94 +1,101 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
-import XPBadge from "../ui/XPBadge"; // Assuming this path is correct
-import { FaBolt, FaCrown, FaShieldAlt } from "react-icons/fa";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei"; // Import useGLTF for GLB models
-import { Group } from "three";
-import { useRef, Suspense } from "react"; // Import Suspense for GLB loading
+import { motion } from 'framer-motion';
+import XPBadge from '../ui/XPBadge';
+import { FaBolt, FaCrown, FaShieldAlt } from 'react-icons/fa';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF } from '@react-three/drei';
+import { Group } from 'three';
+import { useRef, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
-// Define the type for GLTF results, specifically for the scene object
-type GLTFResult = {
+// Define the type for GLTF results
+interface GLTFResult {
   scene: Group;
-};
+}
 
-// Updated NFTItems to point to specific GLB files
+// Define NFT items with GLB files
 const NFTItems = [
   {
     id: 1,
-    name: "Sophex Explorer",
-    utility: "+20% XP Boost",
-    rarity: "Common",
+    name: 'Sophex Explorer',
+    utility: '+20% XP Boost',
+    rarity: 'Common',
     icon: <FaShieldAlt className="text-orange-400" />,
-    image: "/assets/NFT.glb", // Assuming this is your first GLB
+    image: '/assets/NFT.glb',
   },
   {
     id: 2,
-    name: "Sophex Pioneer",
-    utility: "Early Quest Access",
-    rarity: "Rare",
+    name: 'Sophex Pioneer',
+    utility: 'Early Quest Access',
+    rarity: 'Rare',
     icon: <FaBolt className="text-orange-400" />,
-    image: "/assets/nft1.glb", // Pointing to nft1.glb
+    image: '/assets/nft1.glb',
   },
   {
     id: 3,
-    name: "Sophex Master",
-    utility: "+50% XP Boost & Exclusive Quests",
-    rarity: "Legendary",
+    name: 'Sophex Master',
+    utility: '+50% XP Boost & Exclusive Quests',
+    rarity: 'Legendary',
     icon: <FaCrown className="text-orange-400" />,
-    image: "/assets/nft2.glb", // Pointing to nft2.glb
+    image: '/assets/nft2.glb',
   },
 ];
 
-// Component for 3D NFT preview using GLB
-type NFTPreview3DProps = {
-  src: string; // Path to the GLB file
+// Dynamically import NFTPreview3D to prevent SSR
+const NFTPreview3D = dynamic(
+  () =>
+    Promise.resolve(
+      ({ src, scale = [1.8, 1.8, 1.8], rotationSpeed = 0.005 }: NFTPreview3DProps) => {
+        const groupRef = useRef<Group>(null);
+        let gltf: GLTFResult | null = null;
+
+        try {
+          gltf = useGLTF(src) as GLTFResult;
+        } catch (error) {
+          console.error('Failed to load GLTF:', error);
+          return null;
+        }
+
+        useFrame(() => {
+          if (groupRef.current && gltf?.scene) {
+            groupRef.current.rotation.y += rotationSpeed;
+          }
+        });
+
+        if (!gltf?.scene) return null;
+
+        return (
+          <group ref={groupRef} scale={scale}>
+            <primitive object={gltf.scene} />
+          </group>
+        );
+      }
+    ),
+  { ssr: false }
+);
+
+interface NFTPreview3DProps {
+  src: string;
   scale?: [number, number, number];
   rotationSpeed?: number;
-};
-
-function NFTPreview3D({
-  src,
-  scale = [1.8, 1.8, 1.8], // Increased default scale for card size
-  rotationSpeed = 0.005,
-}: NFTPreview3DProps) {
-  // Load the GLB model using useGLTF
-  const gltf = useGLTF(src) as unknown as GLTFResult;
-  const groupRef = useRef<Group>(null);
-
-  // Rotate the model on each frame
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += rotationSpeed; // Gentle rotation around Y-axis
-    }
-  });
-
-  return (
-    <group ref={groupRef} scale={scale}>
-      {/* Render the loaded GLB scene */}
-      <primitive object={gltf.scene} />
-    </group>
-  );
 }
 
 export default function NFTShowcase() {
   return (
     <section className="py-20 relative" id="nfts">
-      {/* Decorative sphere */}
       <div className="absolute -top-40 right-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl -z-10" />
 
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Utility-Powered{" "}
+            Utility-Powered{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600">
               NFTs
             </span>
           </h2>
           <p className="text-xl text-neutral-300">
-            More than just art - our NFTs unlock real advantages in the Sophex
-            ecosystem
+            More than just art - our NFTs unlock real advantages in the Sophex ecosystem
           </p>
         </div>
 
@@ -103,48 +110,25 @@ export default function NFTShowcase() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -10 }}
             >
-              {/* 3D Card Effect */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
               <div className="relative">
-                {/* 3D NFT Preview Canvas */}
                 <div className="w-full h-64 mb-6 rounded-xl overflow-hidden group-hover:shadow-lg group-hover:shadow-orange-500/20 transition-all">
                   <Canvas camera={{ position: [0, 0, 3], fov: 60 }}>
-                    {" "}
-                    {/* Adjusted camera for smaller canvas */}
-                    {/* Lighting for the individual NFT preview - Increased and added more */}
-                    <ambientLight intensity={1.5} />{" "}
-                    {/* Increased ambient light for overall brightness */}
-                    <directionalLight
-                      position={[2, 2, 2]}
-                      intensity={2.0}
-                    />{" "}
-                    {/* Main light, increased intensity */}
-                    <directionalLight
-                      position={[-2, -2, -2]}
-                      intensity={1.0}
-                    />{" "}
-                    {/* Fill light, increased intensity */}
-                    <directionalLight
-                      position={[0, 3, -1]}
-                      intensity={0.8}
-                      color="#FFFFFF"
-                    />{" "}
-                    {/* New light from top-back for more highlights */}
-                    {/* Suspense for loading the GLB model */}
+                    <ambientLight intensity={1.5} />
+                    <directionalLight position={[2, 2, 2]} intensity={2.0} />
+                    <directionalLight position={[-2, -2, -2]} intensity={1.0} />
+                    <directionalLight position={[0, 3, -1]} intensity={0.8} color="#FFFFFF" />
                     <Suspense fallback={null}>
-                      <NFTPreview3D src={nft.image} />{" "}
-                      {/* Use the new 3D preview component */}
+                      <NFTPreview3D src={nft.image} />
                     </Suspense>
-                    {/* OrbitControls for interaction within the card */}
                     <OrbitControls
                       enableZoom={false}
                       enablePan={false}
-                      // Allow slight vertical rotation but prevent flipping
                       minPolarAngle={Math.PI / 2 - 0.3}
                       maxPolarAngle={Math.PI / 2 + 0.3}
                       autoRotate
-                      autoRotateSpeed={0.5} // Slightly faster auto-rotation for cards
+                      autoRotateSpeed={0.5}
                     />
                   </Canvas>
                 </div>
@@ -159,9 +143,7 @@ export default function NFTShowcase() {
                 </p>
 
                 <div className="flex justify-between items-center mt-6">
-                  <span className="text-neutral-400">
-                    #{String(nft.id).padStart(3, "0")}
-                  </span>
+                  <span className="text-neutral-400">#{String(nft.id).padStart(3, '0')}</span>
                   <button className="bg-orange-500/10 text-orange-500 px-4 py-2 rounded-lg hover:bg-orange-500/20 transition-colors">
                     View Details
                   </button>
@@ -185,10 +167,10 @@ export default function NFTShowcase() {
           </h3>
           <ul className="space-y-3">
             {[
-              "XP boosts for faster reward accumulation",
-              "Early access to exclusive quests and campaigns",
-              "Special privileges in community governance",
-              "Increased conversion rates for fiat payouts",
+              'XP boosts for faster reward accumulation',
+              'Early access to exclusive quests and campaigns',
+              'Special privileges in community governance',
+              'Increased conversion rates for fiat payouts',
             ].map((benefit, i) => (
               <li key={i} className="flex items-start text-neutral-300">
                 <span className="text-orange-500 mr-2">•</span>
@@ -202,7 +184,7 @@ export default function NFTShowcase() {
   );
 }
 
-// Preload all GLB files used in NFTItems
-useGLTF.preload("/assets/NFT.glb");
-useGLTF.preload("/assets/nft1.glb");
-useGLTF.preload("/assets/nft2.glb");
+// Preload GLB files
+useGLTF.preload('/assets/NFT.glb');
+useGLTF.preload('/assets/nft1.glb');
+useGLTF.preload('/assets/nft2.glb');
