@@ -243,7 +243,7 @@ export default function SpinPageContent() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between w-full z-20 p-4 rounded-lg shadow-lg mb-6">
+      <div className="flex items-center justify-between w-full z-20 px4 py-1 rounded-lg shadow-lg mb-6">
         <div className=" flex items-center  gap-3">
         <div className="bg-orange-500 rounded-lg p-2">
           <Image
