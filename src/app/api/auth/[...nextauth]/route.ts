@@ -60,66 +60,61 @@ export const authOptions: NextAuthOptions = {
         try {
           await connectMongoose();
           const twitterProfile = profile as TwitterProfile;
-          const twitterId = twitterProfile.id || user.id;
+          const twitterId = twitterProfile.id; // Use twitterProfile.id directly
           const username = twitterProfile.username || user.name || 'Unknown';
 
-          await User.findOneAndUpdate(
-            { twitterId },
-            {
-              $set: {
-                twitterId,
-                username,
-                createdAt: new Date(),
-              },
-            },
-            { upsert: true, new: true }
-          );
+          if (!twitterId) {
+            console.error('[SignIn] Missing twitterId:', profile);
+            return false;
+          }
 
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`[SignIn] User upserted: ${twitterId}`);
+          const existingUser = await User.findOne({ twitterId });
+          if (!existingUser) {
+            await User.create({
+              twitterId,
+              username,
+              createdAt: new Date(),
+            });
+            console.log(`[SignIn] New user created: ${twitterId}`);
+          } else {
+            await User.findOneAndUpdate(
+              { twitterId },
+              { $set: { username } },
+              { new: true }
+            );
+            console.log(`[SignIn] User updated: ${twitterId}`);
           }
         } catch (error) {
-          if (process.env.NODE_ENV !== 'production') {
-            console.error('[SignIn Error]', error);
-          }
+          console.error('[SignIn Error]', error);
           return false;
         }
       }
       return true;
     },
 
+    async jwt({ token, user, account }) {
+      if (account?.provider === 'twitter' && user?.id) {
+        token.id = user.id; // Should be twitterId from Twitter
+      }
+      return token;
+    },
+
     async session({ session, token }) {
       try {
         await connectMongoose();
-        const appUser = await User.findOne({ twitterId: token.id });
+        const appUser = await User.findOne({ twitterId: token.id as string });
 
         if (appUser) {
-          session.user.id = appUser.twitterId;
+          session.user.id = appUser.twitterId; // Ensure this matches twitterId
           session.user.name = appUser.username;
-
-          if (process.env.NODE_ENV !== 'production') {
-            console.log(`[Session] Loaded session for ${appUser.username}`);
-          }
+          console.log(`[Session] Loaded session for ${appUser.username}, id: ${appUser.twitterId}`);
         } else {
-          if (process.env.NODE_ENV !== 'production') {
-            console.warn('[Session] No appUser found for twitterId:', token.id);
-          }
+          console.warn('[Session] No appUser found for twitterId:', token.id);
         }
-
-        return session;
       } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          console.error('[Session Error]', error);
-        }
-        return session;
+        console.error('[Session Error]', error);
       }
-    },
-
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
+      return session;
     },
   },
   pages: {

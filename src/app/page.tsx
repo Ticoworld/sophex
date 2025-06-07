@@ -1,12 +1,12 @@
-
-import Hero        from '@/components/sections/Hero';
-import ValueProp   from '@/components/sections/ValueProp';
+import Hero from '@/components/sections/Hero';
+import ValueProp from '@/components/sections/ValueProp';
 import NFTShowcase from '@/components/sections/NFTShowcase';
-import Workflow    from '@/components/sections/Workflow';
+import Workflow from '@/components/sections/Workflow';
 import SpinSection from '@/components/sections/SpinSection';
-import CTA         from '@/components/sections/CTA';
-import Footer      from '@/components/layout/Footer';
-import Navbar      from '@/components/navigation/Navbar';
+import CTA from '@/components/sections/CTA';
+import Footer from '@/components/layout/Footer';
+import Navbar from '@/components/navigation/Navbar';
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
 export const generateMetadata = (): Metadata => ({
@@ -29,15 +29,26 @@ export const generateMetadata = (): Metadata => ({
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      <Navbar />
-      <Hero />
-      <ValueProp />
-      <NFTShowcase />
-      <Workflow />
-      <SpinSection />
-      <CTA />
-      <Footer />
-    </main>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-black">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-dashed border-orange-500 rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-neutral-300 text-xl">Loading SOPHEX...</p>
+          </div>
+        </div>
+      }
+    >
+      <main className="min-h-screen">
+        <Navbar />
+        <Hero />
+        <ValueProp />
+        <NFTShowcase />
+        <Workflow />
+        <SpinSection />
+        <CTA />
+        <Footer />
+      </main>
+    </Suspense>
   );
 }

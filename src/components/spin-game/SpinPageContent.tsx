@@ -228,48 +228,47 @@ export default function SpinPageContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white px-4 py-1 overflow-hidden">
-  <CosmicBackground />
-  <ToastContainer
-    position="top-right"
-    autoClose={3000}
-    hideProgressBar={false}
-    newestOnTop
-    closeOnClick
-    rtl={false}
-    pauseOnFocusLoss
-    draggable
-    pauseOnHover
-    toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
-  />
+      <CosmicBackground />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
+      />
 
-  {/* Header */}
-  <div className="p-4">
-    <div className="flex items-center justify-between w-full z-20 px-1 py-1 rounded-lg shadow-lg">
-      <div className="flex items-center gap-3">
-        <div className="bg-orange-500 rounded-lg p-1">
-          <Image
-            src="/assets/nft2.png"
-            alt="SOPHEX Logo"
-            width={64}
-            height={64}
-            className="w-16 h-16 object-cover rounded-full"
-          />
+      {/* Header */}
+      <div className="relative p-4">
+        <div className="flex items-center justify-between w-full z-30 px-1 py-1 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <div className="bg-orange-500 rounded-lg p-1">
+              <Image
+                src="/assets/nft2.png"
+                alt="SOPHEX Logo"
+                width={64}
+                height={64}
+                className="w-16 h-16 object-cover rounded-full"
+              />
+            </div>
+            <h1 className="md:text-2xl text-lg font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
+              SOPHEX
+            </h1>
+          </div>
+          <div>
+            <Link
+              href="/"
+              className="ml-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+            >
+              Home
+            </Link>
+          </div>
         </div>
-        <h1 className="md:text-2xl text-lg font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
-          SOPHEX
-        </h1>
       </div>
-      <div>
-        <Link
-          href="/"
-          className="ml-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
-        >
-          Home
-        </Link>
-      </div>
-    </div>
-  </div>
-      
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center">
