@@ -227,7 +227,7 @@ export default function SpinPageContent() {
   };
 
   return (
-    <div className="min-h-screen relative bg-black text-white flex flex-col items-center justify-center p-4 overflow-hidden">
+    <div className="min-h-screen relative bg-black text-white flex flex-col items-center justify-center px-4 py-1 overflow-hidden">
       <CosmicBackground />
       <ToastContainer
         position="top-right"
@@ -243,7 +243,7 @@ export default function SpinPageContent() {
       />
 
       {/* Header */}
-      <div className="flex items-center justify-between w-full z-20 px4 py-1 rounded-lg shadow-lg mb-6">
+      <div className="absolute top-2 flex items-center justify-between w-full z-20 px-4 py-1 rounded-lg shadow-lg mb-6">
         <div className=" flex items-center  gap-3">
         <div className="bg-orange-500 rounded-lg p-2">
           <Image

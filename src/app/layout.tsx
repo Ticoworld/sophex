@@ -66,7 +66,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/assets/nft2.png" sizes="any" />
         <link rel="icon" href="/assets/nft2.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/assets/nft2.png" />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${inter.className} bg-neutral-900 text-white min-h-screen`}>
