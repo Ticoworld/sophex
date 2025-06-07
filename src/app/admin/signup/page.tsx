@@ -72,7 +72,6 @@ const AdminSignupPage = () => {
           draggable
           pauseOnHover
           toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
-          progressStyle={{ background: '#f97316' }}
         />
         <div className="bg-black rounded-xl p-8 max-w-md w-full border-2 border-orange-500 text-center">
           <h1 className="text-2xl font-bold text-orange-500 mb-6">SOPHEX Admin Signup</h1>
@@ -101,7 +100,6 @@ const AdminSignupPage = () => {
         draggable
         pauseOnHover
         toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
-        progressStyle={{ background: '#f97316' }}
       />
       <div className="bg-black rounded-xl p-8 max-w-md w-full border-2 border-orange-500">
         <h1 className="text-2xl font-bold text-center mb-6 text-orange-500">SOPHEX Admin Signup</h1>

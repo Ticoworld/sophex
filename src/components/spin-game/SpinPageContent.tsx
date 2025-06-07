@@ -11,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { FaTwitter, FaRocket, FaGift, FaStar, FaCheck, FaHandPaper } from 'react-icons/fa';
 import { GiFingersCrossed as GiFingersCrossedIcon } from 'react-icons/gi';
+import Link from 'next/link';
 
 // Simple seeded random number generator for consistent SSR/client rendering
 function mulberry32(seed: number) {
@@ -239,11 +240,11 @@ export default function SpinPageContent() {
         draggable
         pauseOnHover
         toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
-        progressStyle={{ background: '#f97316' }}
       />
 
       {/* Header */}
-      <div className="absolute top-6 left-6 z-20 flex items-center gap-3">
+      <div className="flex items-center justify-between w-full z-20 p-4 rounded-lg shadow-lg mb-6">
+        <div className=" flex items-center  gap-3">
         <div className="bg-orange-500 rounded-lg p-2">
           <Image
             src="/assets/nft2.png"
@@ -257,6 +258,16 @@ export default function SpinPageContent() {
           SOPHEX
         </h1>
       </div>
+              <div>
+          <Link
+            href="/"
+            className="ml-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+          >
+            Home
+          </Link>
+        </div>
+      </div>
+      
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center">
