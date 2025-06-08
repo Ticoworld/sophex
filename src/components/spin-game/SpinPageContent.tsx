@@ -112,36 +112,64 @@ export default function SpinPageContent() {
     loadFingerprint().catch(console.error);
   }, []);
 
-  useEffect(() => {
-  if (status === 'authenticated' && deviceId && !isAssociatingRef.current) {
-    const controller = new AbortController();
-    isAssociatingRef.current = true;
-    setIsAssociating(true);
-    fetch('/api/device/associate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ deviceId }),
-      signal: controller.signal,
-    })
-      .then((res) => {
-        if (res.ok) fetchSpins();
-        else throw new Error('Association failed');
-      })
-      .catch((err) => {
-        if (err.name === 'AbortError') return;
-        console.error('Association error:', err);
-        setError('Failed to associate device');
-      })
-      .finally(() => {
-        setIsAssociating(false);
-        isAssociatingRef.current = false;
+const handleSignOut = useCallback(async () => {
+    try {
+      await signOut({ callbackUrl: '/spin' });
+      toast.success('Signed out successfully!', {
+        icon: <FaHandPaper />,
+        theme: 'dark',
+        style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
       });
+      setDeviceId(null);
+    } catch (err: unknown) {
+      toast.error('Failed to sign out', {
+        icon: <FaGift />,
+        theme: 'dark',
+        style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
+      });
+    }
+  }, []);
 
-    return () => controller.abort(); // Cleanup on unmount or re-run
-  } else if (status === 'unauthenticated') {
-    setSpinsLeft(0);
-  }
-}, [status, deviceId, fetchSpins]);
+ useEffect(() => {
+    if (status === 'authenticated' && deviceId && !isAssociatingRef.current) {
+      const controller = new AbortController();
+      isAssociatingRef.current = true;
+      setIsAssociating(true);
+      fetch('/api/device/associate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId }),
+        signal: controller.signal,
+      })
+        .then(async (res) => {
+          if (res.ok) {
+            fetchSpins();
+          } else {
+            const data = await res.json();
+            if (res.status === 403) {
+              toast.error(data.error || 'This device is already linked to another account.');
+              setTimeout(() => handleSignOut(), 2000);
+            } else {
+              throw new Error(data.error || 'Association failed');
+            }
+          }
+        })
+        .catch((err) => {
+          if (err.name === 'AbortError') return;
+          console.error('Association error:', err);
+          setError('Failed to associate device');
+          setTimeout(() => handleSignOut(), 2000);
+        })
+        .finally(() => {
+          setIsAssociating(false);
+          isAssociatingRef.current = false;
+        });
+
+      return () => controller.abort();
+    } else if (status === 'unauthenticated') {
+      setSpinsLeft(0);
+    }
+  }, [status, deviceId, fetchSpins, handleSignOut]);
 
   
 
@@ -247,23 +275,7 @@ export default function SpinPageContent() {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut({ callbackUrl: '/spin' });
-      toast.success('Signed out successfully!', {
-        icon: <FaHandPaper />,
-        theme: 'dark',
-        style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
-      });
-      setDeviceId(null);
-    } catch (err: unknown) {
-      toast.error('Failed to sign out', {
-        icon: <FaGift />,
-        theme: 'dark',
-        style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
-      });
-    }
-  };
+
 
   if (isAssociating) return <div className="text-center p-4">Associating device...</div>;
 

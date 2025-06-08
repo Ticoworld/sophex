@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
     // Check if deviceId is already associated with another user
     const existingDeviceUser = await User.findOne({ deviceId });
     if (existingDeviceUser && existingDeviceUser.twitterId !== user.twitterId) {
-      return NextResponse.json({ error: 'Device already associated with another account' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'This device is already linked to another account. Please use a different device or contact support.' },
+        { status: 403 }
+      );
     }
 
     user.deviceId = deviceId;
