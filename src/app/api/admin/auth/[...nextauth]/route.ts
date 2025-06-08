@@ -1,6 +1,6 @@
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { connectMongoose } from '@/lib/mongo';
 import { Admin } from '@/models/Admin';
 import { NextRequest, NextResponse } from 'next/server';
