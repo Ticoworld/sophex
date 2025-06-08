@@ -33,6 +33,10 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  deviceId: {
+    type: String,
+    default: null,
+  },
 });
 
 export const User = models.User || model('User', userSchema);

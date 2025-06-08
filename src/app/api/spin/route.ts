@@ -15,7 +15,6 @@ const RESULT_MAP: { [key: string]: string } = {
 };
 
 export async function GET(req: NextRequest) {
-  // Apply rate limiting
   const rateLimitResult = await rateLimit(req);
   if (rateLimitResult) return rateLimitResult;
 
@@ -26,13 +25,20 @@ export async function GET(req: NextRequest) {
     }
 
     await connectMongoose();
-
     const user = await User.findOne({ twitterId: session.user.id });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Reset spins if last spin was on a different day
+    // Whitelist check
+    if (user.whitelistWon) {
+      return NextResponse.json({
+        spinsLeft: 0,
+        message: 'Whitelist won! Thanks for participating.',
+        canSpin: false,
+      });
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const lastSpinDate = user.lastSpinDate ? user.lastSpinDate.toISOString().split('T')[0] : null;
     if (lastSpinDate !== today) {
@@ -42,7 +48,7 @@ export async function GET(req: NextRequest) {
     }
 
     const spinsLeft = DAILY_SPINS - user.spinsUsed + user.freeSpins;
-    return NextResponse.json({ spinsLeft });
+    return NextResponse.json({ spinsLeft, canSpin: true });
   } catch (error) {
     console.error('Error in /api/spin GET:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -50,7 +56,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  // Apply rate limiting
   const rateLimitResult = await rateLimit(req);
   if (rateLimitResult) return rateLimitResult;
 
@@ -61,13 +66,20 @@ export async function POST(req: NextRequest) {
     }
 
     await connectMongoose();
-
     const user = await User.findOne({ twitterId: session.user.id });
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check spin eligibility
+    // Whitelist check
+    if (user.whitelistWon) {
+      return NextResponse.json({
+        error: 'Whitelist won! No more spins allowed.',
+        spinsLeft: 0,
+        canSpin: false,
+      }, { status: 403 });
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const lastSpinDate = user.lastSpinDate ? user.lastSpinDate.toISOString().split('T')[0] : null;
     if (lastSpinDate !== today) {
@@ -80,7 +92,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No spins left' }, { status: 400 });
     }
 
-    // Deduct a spin
     if (user.freeSpins > 0) {
       user.freeSpins -= 1;
     } else {
@@ -88,24 +99,21 @@ export async function POST(req: NextRequest) {
     }
     user.lastSpinDate = new Date();
 
-    // Generate result, prevent whitelist if already won
     let prizeNumber = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
     if (WHEEL_SEGMENTS[prizeNumber] === 'WHITELIST' && user.whitelistWon) {
-      prizeNumber = WHEEL_SEGMENTS.findIndex(s => s === 'SPIN LOST'); // Fallback to SPIN LOST
+      prizeNumber = WHEEL_SEGMENTS.findIndex(s => s === 'SPIN LOST');
     }
     const result = RESULT_MAP[WHEEL_SEGMENTS[prizeNumber]];
 
-    // Update user based on result
     if (result === 'free-spin') {
       user.freeSpins += 1;
     } else if (result === 'whitelist') {
       user.whitelistWon = true;
     }
-    
 
     await user.save();
 
-    return NextResponse.json({ prizeNumber, result, spinsLeft: spinsLeft - 1 });
+    return NextResponse.json({ prizeNumber, result, spinsLeft: spinsLeft - 1, canSpin: !user.whitelistWon });
   } catch (error) {
     console.error('Error in /api/spin POST:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

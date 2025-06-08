@@ -7,7 +7,6 @@ import { User } from '@/models/User';
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit } from '@/lib/rateLimit';
 
-// Updated interface to reflect Twitter v2 API nested structure
 interface TwitterProfile {
   data: {
     id: string;
@@ -65,7 +64,7 @@ export const authOptions: NextAuthOptions = {
         try {
           await connectMongoose();
           const twitterProfile = profile as { data: TwitterProfile['data'] };
-          const twitterId = twitterProfile.data.id; // Access nested data.id
+          const twitterId = twitterProfile.data.id;
           console.log('[SignIn] Full profile:', profile);
 
           if (!twitterId) {
@@ -75,21 +74,20 @@ export const authOptions: NextAuthOptions = {
 
           const username = twitterProfile.data.username || user.name || 'Unknown';
           const existingUser = await User.findOne({ twitterId });
-
           if (!existingUser) {
             await User.create({
               twitterId,
               username,
               createdAt: new Date(),
             });
-            console.log(`[SignIn] New user created: ${twitterId}, username: ${username}`);
+            console.log(`[SignIn] New user created: ${twitterId}`);
           } else {
             await User.findOneAndUpdate(
               { twitterId },
               { $set: { username } },
               { new: true }
             );
-            console.log(`[SignIn] User updated: ${twitterId}, username: ${username}`);
+            console.log(`[SignIn] User updated: ${twitterId}`);
           }
         } catch (error) {
           console.error('[SignIn Error]', error);
@@ -101,7 +99,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account, profile }) {
       if (account?.provider === 'twitter' && profile) {
         const twitterProfile = profile as { data: TwitterProfile['data'] };
-        token.id = twitterProfile.data.id; // Set token.id to Twitter ID
+        token.id = twitterProfile.data.id;
         console.log('[JWT] Token updated with id:', token.id);
       }
       return token;
@@ -129,7 +127,6 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-// Rate-limited handler for NextAuth
 interface RequestContext {
   params: Record<string, string>;
 }

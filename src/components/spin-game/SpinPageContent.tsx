@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import SpinButton from '@/components/spin-game/SpinButton';
 import ResultModal from '@/components/spin-game/ResultModal';
@@ -9,11 +9,12 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
-import { FaTwitter, FaRocket, FaGift, FaStar, FaCheck, FaHandPaper } from 'react-icons/fa';
+import { FaTwitter, FaGift, FaStar, FaCheck, FaHandPaper } from 'react-icons/fa';
 import { GiFingersCrossed as GiFingersCrossedIcon } from 'react-icons/gi';
 import Link from 'next/link';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
-// Simple seeded random number generator for consistent SSR/client rendering
+// Simple seeded random number generator
 function mulberry32(seed: number) {
   return function () {
     let t = (seed += 0x6d2b79f5);
@@ -44,17 +45,15 @@ const SpinWheel = dynamic(() => import('@/components/spin-game/SpinWheel'), {
   ),
 });
 
-const CosmicBackground = () => {
-  return (
-    <div className="fixed inset-0 z-0 overflow-hidden">
-      {stars.map((style, i) => (
-        <div key={i} className="absolute rounded-full bg-white animate-pulse" style={style} />
-      ))}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-500 rounded-full mix-blend-screen opacity-20 blur-3xl"></div>
-      <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-orange-400 rounded-full mix-blend-screen opacity-15 blur-3xl"></div>
-    </div>
-  );
-};
+const CosmicBackground = () => (
+  <div className="fixed inset-0 z-0 overflow-hidden">
+    {stars.map((style, i) => (
+      <div key={i} className="absolute rounded-full bg-white animate-pulse" style={style} />
+    ))}
+    <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-orange-500 rounded-full mix-blend-screen opacity-20 blur-3xl"></div>
+    <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-orange-400 rounded-full mix-blend-screen opacity-15 blur-3xl"></div>
+  </div>
+);
 
 export default function SpinPageContent() {
   const { data: session, status } = useSession();
@@ -66,28 +65,23 @@ export default function SpinPageContent() {
   const [isClient, setIsClient] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [isAssociating, setIsAssociating] = useState<boolean>(false);
+  const isAssociatingRef = useRef(false); // Add ref to track association
 
-  useEffect(() => {
-    setIsClient(true);
-    if (status === 'authenticated') {
-      toast.success(`Welcome, @${session.user?.name}!`, {
-        icon: <FaRocket />,
-        theme: 'dark',
-        style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
-      });
-      fetchSpins();
-    } else if (status === 'unauthenticated') {
-      setSpinsLeft(0);
-    }
-  }, [status, session]);
 
-  const fetchSpins = async () => {
+  const fetchSpins = useCallback(async () => {
+    if (!deviceId) return;
     setIsLoading(true);
     try {
-      const res = await fetch('/api/spin');
+      const res = await fetch('/api/spin', {
+        headers: { 'x-device-id': deviceId },
+      });
       const data = await res.json();
       if (res.ok) {
-        setSpinsLeft(data.spinsLeft);
+        setSpinsLeft(data.spinsLeft || 0);
+        if (data.message) setError(data.message);
+        else setError(null);
       } else {
         setError(data.error || 'Failed to fetch spins');
         toast.error(data.error || 'Failed to fetch spins', {
@@ -106,14 +100,60 @@ export default function SpinPageContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [deviceId]);
+
+  useEffect(() => {
+    setIsClient(true);
+    const loadFingerprint = async () => {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      setDeviceId(result.visitorId);
+    };
+    loadFingerprint().catch(console.error);
+  }, []);
+
+  useEffect(() => {
+  if (status === 'authenticated' && deviceId && !isAssociatingRef.current) {
+    const controller = new AbortController();
+    isAssociatingRef.current = true;
+    setIsAssociating(true);
+    fetch('/api/device/associate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId }),
+      signal: controller.signal,
+    })
+      .then((res) => {
+        if (res.ok) fetchSpins();
+        else throw new Error('Association failed');
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        console.error('Association error:', err);
+        setError('Failed to associate device');
+      })
+      .finally(() => {
+        setIsAssociating(false);
+        isAssociatingRef.current = false;
+      });
+
+    return () => controller.abort(); // Cleanup on unmount or re-run
+  } else if (status === 'unauthenticated') {
+    setSpinsLeft(0);
+  }
+}, [status, deviceId, fetchSpins]);
+
+  
 
   const handleSpin = async () => {
-    if (spinsLeft <= 0 || mustSpin || isLoading) return;
+    if (spinsLeft <= 0 || mustSpin || isLoading || !!error?.includes('Whitelist won')) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/spin', { method: 'POST' });
+      const res = await fetch('/api/spin', {
+        method: 'POST',
+        headers: { 'x-device-id': deviceId || '' },
+      });
       const data = await res.json();
       if (res.ok) {
         setPrizeNumber(data.prizeNumber);
@@ -150,9 +190,7 @@ export default function SpinPageContent() {
       });
       setSpinsLeft((prev) => prev + 1);
       setTimeout(() => {
-        if (!isLoading && !mustSpin) {
-          handleSpin();
-        }
+        if (!isLoading && !mustSpin) handleSpin();
       }, 2000);
     } else {
       setShowModal(true);
@@ -162,8 +200,8 @@ export default function SpinPageContent() {
           theme: 'dark',
           style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
         });
-      } else if (result === 'try-again') {
-        toast.info('Try again!', {
+      } else if (result === 'empty') {
+        toast.info('Spin lost this time!', {
           icon: <GiFingersCrossedIcon />,
           theme: 'dark',
           style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
@@ -217,6 +255,7 @@ export default function SpinPageContent() {
         theme: 'dark',
         style: { background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' },
       });
+      setDeviceId(null);
     } catch (err: unknown) {
       toast.error('Failed to sign out', {
         icon: <FaGift />,
@@ -225,6 +264,8 @@ export default function SpinPageContent() {
       });
     }
   };
+
+  if (isAssociating) return <div className="text-center p-4">Associating device...</div>;
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white px-4 py-1 overflow-hidden">
@@ -242,7 +283,6 @@ export default function SpinPageContent() {
         toastStyle={{ background: '#1a1a1a', border: '1px solid #f97316', color: '#f97316' }}
       />
 
-      {/* Header */}
       <div className="relative p-4">
         <div className="flex items-center justify-between w-full z-30 px-1 py-1 rounded-lg shadow-lg">
           <div className="flex items-center gap-3">
@@ -270,7 +310,6 @@ export default function SpinPageContent() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="relative z-10 flex flex-col items-center">
         <h1 className="text-4xl font-bold mb-3 text-center bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
           Spin to Win Whitelist
@@ -278,9 +317,7 @@ export default function SpinPageContent() {
 
         {status === 'authenticated' && (
           <div className="flex items-center gap-4 mb-4">
-            <span className="text-lg font-medium text-orange-300">
-              @{session.user?.name}
-            </span>
+            <span className="text-lg font-medium text-orange-300">@{session.user?.name}</span>
             <button
               onClick={handleSignOut}
               className="px-4 py-1 bg-transparent border border-orange-500 rounded-lg text-sm font-semibold text-orange-300 hover:bg-orange-900 transition-colors"
@@ -290,30 +327,29 @@ export default function SpinPageContent() {
           </div>
         )}
 
-        {error && (
+        {error && error.includes('Whitelist won') && (
+          <div className="mb-2 p-2 bg-green-900 text-green-200 rounded-lg border border-green-500 text-center">
+            {error}
+          </div>
+        )}
+        {error && !error.includes('Whitelist won') && (
           <div className="mb-2 p-2 bg-orange-900 text-orange-200 rounded-lg border border-orange-500">
             Error: {error}
           </div>
         )}
 
-        {isLoading && (
-          <div className="mb-2 p-2 text-orange-500">Loading...</div>
-        )}
+        {isLoading && <div className="mb-2 p-2 text-orange-500">Loading...</div>}
 
         <SpinCounter spinsLeft={spinsLeft} />
 
         {isClient && (
-          <SpinWheel
-            mustSpin={mustSpin}
-            prizeNumber={prizeNumber}
-            onStopSpinning={handleSpinComplete}
-          />
+          <SpinWheel mustSpin={mustSpin} prizeNumber={prizeNumber} onStopSpinning={handleSpinComplete} />
         )}
 
         {status === 'authenticated' ? (
           <SpinButton
             onClick={handleSpin}
-            disabled={spinsLeft <= 0 || mustSpin || isLoading}
+            disabled={spinsLeft <= 0 || mustSpin || isLoading || !!error?.includes('Whitelist won')}
           />
         ) : (
           <button
