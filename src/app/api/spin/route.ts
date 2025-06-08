@@ -99,11 +99,41 @@ export async function POST(req: NextRequest) {
     }
     user.lastSpinDate = new Date();
 
-    let prizeNumber = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
-    if (WHEEL_SEGMENTS[prizeNumber] === 'WHITELIST' && user.whitelistWon) {
-      prizeNumber = WHEEL_SEGMENTS.findIndex(s => s === 'SPIN LOST');
+    // Define weighted probabilities
+    const probabilities = [
+      { option: 'SPIN LOST', weight: 0.93 }, // 93% chance
+      { option: 'FREE SPIN', weight: 0.06 }, // 6% chance
+      { option: 'WHITELIST', weight: 0.01 }, // 1% chance
+    ];
+
+    // Normalize weights to sum to 1 (optional safeguard)
+    const totalWeight = probabilities.reduce((sum, p) => sum + p.weight, 0);
+    const normalizedProbabilities = probabilities.map(p => ({
+      option: p.option,
+      weight: p.weight / totalWeight,
+    }));
+
+    // Generate a random number between 0 and 1
+    const rand = Math.random();
+    let cumulative = 0;
+    let selectedOption = 'SPIN LOST'; // Default to 'SPIN LOST'
+
+    for (const prob of normalizedProbabilities) {
+      cumulative += prob.weight;
+      if (rand <= cumulative) {
+        selectedOption = prob.option;
+        break;
+      }
     }
-    const result = RESULT_MAP[WHEEL_SEGMENTS[prizeNumber]];
+
+    // Map selected option to a random prizeNumber from matching segments
+    const possibleIndices = WHEEL_SEGMENTS.reduce((indices, segment, index) => {
+      if (segment === selectedOption) indices.push(index);
+      return indices;
+    }, [] as number[]);
+    const prizeNumber = possibleIndices[Math.floor(Math.random() * possibleIndices.length)] || 0; // Fallback to 0 if no match
+
+    const result = RESULT_MAP[selectedOption];
 
     if (result === 'free-spin') {
       user.freeSpins += 1;
@@ -113,7 +143,12 @@ export async function POST(req: NextRequest) {
 
     await user.save();
 
-    return NextResponse.json({ prizeNumber, result, spinsLeft: spinsLeft - 1, canSpin: !user.whitelistWon });
+    return NextResponse.json({
+      prizeNumber,
+      result,
+      spinsLeft: spinsLeft - 1,
+      canSpin: !user.whitelistWon,
+    });
   } catch (error) {
     console.error('Error in /api/spin POST:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

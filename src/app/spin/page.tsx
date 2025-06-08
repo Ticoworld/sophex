@@ -8,7 +8,7 @@ export const generateMetadata = (): Metadata => ({
   openGraph: {
     title: 'Spin to Win | SOPHEX',
     description: 'Daily spins for NFT whitelist spots and crypto rewards on SOPHEX.',
-    url: 'https://sophex-black.vercel.app/spin', // Replace with your domain
+    url: 'https://sophex-black.vercel.app/spin',
     images: ['/assets/nft2.png'],
   },
   twitter: {
