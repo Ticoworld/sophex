@@ -1,5 +1,6 @@
-import { Metadata } from 'next';
 import SpinPageWrapper from '@/components/spin-game/SpinPageWrapper';
+import { Metadata } from 'next';
+import Link from 'next/link';
 
 export const generateMetadata = (): Metadata => ({
   title: 'Spin to Win | SOPHEX - NFT Whitelist & Crypto Rewards',
@@ -19,5 +20,22 @@ export const generateMetadata = (): Metadata => ({
 });
 
 export default function SpinPage() {
-  return <SpinPageWrapper />;
+    // return <SpinPageWrapper />;
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center space-y-6 p-4">
+      <h2 className="text-2xl font-bold text-center">
+        Our site is currently under maintenance.
+      </h2>
+      <p className="text-lg text-center">
+        Please check back later.
+      </p>
+      <Link
+        href="/"
+        className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+      >
+        Go to Home
+      </Link>
+    </div>
+  );
 }
+ 
