@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { FaTimes } from 'react-icons/fa';
 import { useModal } from '@/context/ModalContext';
+import LoadingLink from '@/components/ui/LoadingLink';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -44,14 +45,25 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
       </div>
       <div className="flex flex-col items-center space-y-6 mt-10">
         {['Features', 'NFTs', 'How It Works', 'Spin'].map((item) => (
-          <Link
-            key={item}
-            href={item === 'Spin' ? '/spin' : `#${item.toLowerCase().replace(' ', '-')}`}
-            className="text-xl text-neutral-300 hover:text-orange-400 transition-colors"
-            onClick={onClose}
-          >
-            {item}
-          </Link>
+          item === 'Spin' ? (
+            <LoadingLink
+              key={item}
+              href="/spin"
+              className="text-xl text-neutral-300 hover:text-orange-400 transition-colors"
+              onClick={onClose}
+            >
+              {item}
+            </LoadingLink>
+          ) : (
+            <Link
+              key={item}
+              href={`#${item.toLowerCase().replace(' ', '-')}`}
+              className="text-xl text-neutral-300 hover:text-orange-400 transition-colors"
+              onClick={onClose}
+            >
+              {item}
+            </Link>
+          )
         ))}
         <button
           onClick={() => {
@@ -62,13 +74,13 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         >
           Join Waitlist
         </button>
-        <Link
+        <LoadingLink
           href="/spin"
           className="bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-3  rounded-lg font-medium text-white hover:from-orange-600 hover:to-orange-700 transition-colors"
           onClick={onClose}
         >
           Spin
-        </Link>
+        </LoadingLink>
       </div>
     </motion.div>
   );

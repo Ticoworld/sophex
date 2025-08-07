@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
+import LoadingLink from '@/components/ui/LoadingLink';
 import { FaSpinner } from 'react-icons/fa';
 
 export default function SpinSection() {
@@ -39,12 +39,12 @@ export default function SpinSection() {
           whileTap="tap"
           className='inline-block'
         >
-          <Link
+          <LoadingLink
             href="/spin"
             className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 px-8 py-3 rounded-lg font-medium text-lg text-white hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg shadow-orange-500/20 "
           >
             <FaSpinner /> Spin Now
-          </Link>
+          </LoadingLink>
         </motion.div>
       </div>
     </section>

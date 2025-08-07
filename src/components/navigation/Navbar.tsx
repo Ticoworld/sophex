@@ -6,6 +6,8 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useModal } from '@/context/ModalContext';
+import { useLoading } from '@/contexts/LoadingContext';
+import LoadingLink from '@/components/ui/LoadingLink';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -43,12 +45,21 @@ export default function Navbar() {
         <div className="hidden md:flex space-x-8">
           {['Features', 'NFTs', 'How It Works', 'Spin'].map((item) => (
             <motion.div key={item} variants={linkVariants} whileHover="hover">
-              <Link
-                href={item === 'Spin' ? '/spin' : `#${item.toLowerCase().replace(' ', '-')}`}
-                className="text-neutral-300 hover:text-primary transition-colors"
-              >
-                {item}
-              </Link>
+              {item === 'Spin' ? (
+                <LoadingLink
+                  href="/spin"
+                  className="text-neutral-300 hover:text-primary transition-colors"
+                >
+                  {item}
+                </LoadingLink>
+              ) : (
+                <Link
+                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  className="text-neutral-300 hover:text-primary transition-colors"
+                >
+                  {item}
+                </Link>
+              )}
             </motion.div>
           ))}
         </div>
@@ -68,12 +79,12 @@ export default function Navbar() {
             whileHover="hover"
             whileTap="tap"
           >
-            <Link
+            <LoadingLink
               href="/spin"
               className="bg-gradient-to-r from-orange-500 block to-orange-600 px-6 py-2 rounded-lg font-medium text-white"
             >
               Spin
-            </Link>
+            </LoadingLink>
           </motion.div>
         </div>
 

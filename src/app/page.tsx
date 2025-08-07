@@ -1,13 +1,5 @@
-import Hero from '@/components/sections/Hero';
-import ValueProp from '@/components/sections/ValueProp';
-import NFTShowcase from '@/components/sections/NFTShowcase';
-import Workflow from '@/components/sections/Workflow';
-import SpinSection from '@/components/sections/SpinSection';
-import CTA from '@/components/sections/CTA';
-import Footer from '@/components/layout/Footer';
-import Navbar from '@/components/navigation/Navbar';
-import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import dynamic from 'next/dynamic';
 
 export const generateMetadata = (): Metadata => ({
   title: 'SOPHEX - Web3 Made Invisible | Earn Crypto Rewards',
@@ -27,28 +19,8 @@ export const generateMetadata = (): Metadata => ({
   },
 });
 
+const LandingPageClient = dynamic(() => import('./LandingPageClient'), { ssr: false });
+
 export default function Home() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-black">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-dashed border-orange-500 rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-neutral-300 text-xl">Loading SOPHEX...</p>
-          </div>
-        </div>
-      }
-    >
-      <main className="min-h-screen">
-        <Navbar />
-        <Hero />
-        <ValueProp />
-        <NFTShowcase />
-        <Workflow />
-        <SpinSection />
-        <CTA />
-        <Footer />
-      </main>
-    </Suspense>
-  );
+  return <LandingPageClient />;
 }

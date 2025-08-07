@@ -4,6 +4,7 @@ import { useSession, signIn, signOut, SessionProvider } from 'next-auth/react';
 import { FaSignOutAlt, FaDownload } from 'react-icons/fa';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { PageLoader } from '@/components/ui/Loader';
 
 interface Winner {
   twitterHandle: string;
@@ -141,7 +142,7 @@ function AdminPageContent() {
   };
 
   if (status === 'loading') {
-    return <div className="min-h-screen bg-black text-orange-500 flex items-center justify-center">Loading...</div>;
+    return <PageLoader message="Loading admin dashboard..." />;
   }
 
   if (!session) {

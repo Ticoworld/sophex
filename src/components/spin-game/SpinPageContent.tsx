@@ -11,7 +11,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { FaTwitter, FaGift, FaStar, FaCheck, FaHandPaper } from 'react-icons/fa';
 import { GiFingersCrossed as GiFingersCrossedIcon } from 'react-icons/gi';
-import Link from 'next/link';
+import Loader, { AuthLoader } from '@/components/ui/Loader';
+import LoadingLink from '@/components/ui/LoadingLink';
 import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 // Simple seeded random number generator
@@ -40,7 +41,7 @@ const SpinWheel = dynamic(() => import('@/components/spin-game/SpinWheel'), {
   ssr: false,
   loading: () => (
     <div className="w-64 h-64 flex items-center justify-center">
-      <div className="w-48 h-48 rounded-full border-4 border-dashed border-orange-500 animate-spin"></div>
+      <Loader message="Loading wheel..." size="lg" variant="pulse" />
     </div>
   ),
 });
@@ -56,6 +57,19 @@ const CosmicBackground = () => (
 );
 
 export default function SpinPageContent() {
+  // Add artificial delay for loader visibility
+  const [delayed, setDelayed] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setDelayed(true), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+  if (!delayed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <Loader message="Loading spin page..." size="lg" />
+      </div>
+    );
+  }
   const { data: session, status } = useSession();
   const [spinsLeft, setSpinsLeft] = useState<number>(0);
   const [mustSpin, setMustSpin] = useState<boolean>(false);
@@ -277,7 +291,13 @@ const handleSignOut = useCallback(async () => {
 
 
 
-  if (isAssociating) return <div className="text-center p-4">Associating device...</div>;
+  if (isAssociating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <AuthLoader message="Connecting your account..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white px-4 py-1 overflow-hidden">
@@ -312,12 +332,18 @@ const handleSignOut = useCallback(async () => {
             </h1>
           </div>
           <div>
-            <Link
+            <LoadingLink
               href="/"
               className="ml-4 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-semibold transition-colors"
+              showLoader={true}
             >
-              Home
-            </Link>
+              <span className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5 mr-1">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l9-9m0 0l9 9m-9-9v18" />
+                </svg>
+                Home
+              </span>
+            </LoadingLink>
           </div>
         </div>
       </div>
@@ -350,7 +376,11 @@ const handleSignOut = useCallback(async () => {
           </div>
         )}
 
-        {isLoading && <div className="mb-2 p-2 text-orange-500">Loading...</div>}
+        {isLoading && (
+          <div className="mb-4 flex justify-center">
+            <Loader message="Processing..." size="sm" variant="minimal" />
+          </div>
+        )}
 
         <SpinCounter spinsLeft={spinsLeft} />
 

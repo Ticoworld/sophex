@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ModalProvider } from '@/context/ModalContext';
+import { LoadingProvider } from '@/contexts/LoadingContext';
 import WaitlistModalWrapper from '@/components/ui/WaitlistModalWrapper';
 import Script from 'next/script';
 import ParticlesWrapper from '@/components/ui/ParticlesWrapper';
@@ -70,11 +71,13 @@ export default function RootLayout({
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${inter.className} bg-neutral-900 text-white min-h-screen`}>
-        <ModalProvider>
-          <ParticlesWrapper />
-          {children}
-          <WaitlistModalWrapper />
-        </ModalProvider>
+        <LoadingProvider>
+          <ModalProvider>
+            <ParticlesWrapper />
+            {children}
+            <WaitlistModalWrapper />
+          </ModalProvider>
+        </LoadingProvider>
         <Script
           src="https://platform.twitter.com/widgets.js"
           strategy="lazyOnload"
